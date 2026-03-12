@@ -36,6 +36,9 @@
 "error_invalid_model_file" = "请选择 Whisper 模型 .bin 文件。";
 "error_extracting_engine" = "无法解压 whisper 引擎。";
 "error_missing_result" = "未生成转录结果文件。";
+"error_empty_result" = "转录完成，但未识别到文本内容。";
+"error_video_has_no_audio" = "所选视频没有可转录的音轨。";
+"error_video_extract_failed" = "无法从所选视频中提取音频。";
 "error_transcribe_failed" = "转录失败。";
 "error_title" = "错误";
 "ok" = "确定";
