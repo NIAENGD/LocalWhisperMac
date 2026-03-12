@@ -17,6 +17,7 @@ final class Transcriber: ObservableObject {
     @Published var status: Status = .idle
 
     private var process: Process?
+    private let passthroughAudioExtensions: Set<String> = ["wav", "mp3"]
 
     var isRunning: Bool {
         if case .running = status { return true }
@@ -31,7 +32,7 @@ final class Transcriber: ObservableObject {
         }
 
         let didAccessSecurityScopedResource = input.startAccessingSecurityScopedResource()
-        var temporaryInputURL: URL?
+        var temporaryInputURLs: [URL] = []
 
         let outputURL = URL(filePath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString)
@@ -41,17 +42,16 @@ final class Transcriber: ObservableObject {
             if didAccessSecurityScopedResource {
                 input.stopAccessingSecurityScopedResource()
             }
-            if let temporaryInputURL {
+            for temporaryInputURL in temporaryInputURLs {
                 try? FileManager.default.removeItem(at: temporaryInputURL)
             }
             try? FileManager.default.removeItem(at: outputURL)
         }
 
         do {
-            let transcribableInputURL = try await prepareInputFile(from: input)
-            if transcribableInputURL != input {
-                temporaryInputURL = transcribableInputURL
-            }
+            let preparedInput = try await prepareInputFile(from: input)
+            let transcribableInputURL = preparedInput.url
+            temporaryInputURLs = preparedInput.temporaryFiles
 
             try FileManager.default.createDirectory(at: outputURL.deletingLastPathComponent(), withIntermediateDirectories: true)
 
@@ -143,12 +143,25 @@ final class Transcriber: ObservableObject {
         progress = min(1, max(progress, pct / 100))
     }
 
-    private func prepareInputFile(from inputURL: URL) async throws -> URL {
+    private func prepareInputFile(from inputURL: URL) async throws -> (url: URL, temporaryFiles: [URL]) {
+        var workingURL = inputURL
+        var temporaryFiles: [URL] = []
+
         if isLikelyVideoFile(inputURL) {
-            return try await extractAudioTrack(from: inputURL)
+            let extractedAudioURL = try await extractAudioTrack(from: inputURL)
+            workingURL = extractedAudioURL
+            temporaryFiles.append(extractedAudioURL)
         }
 
-        return inputURL
+        if shouldConvertToWAV(workingURL) {
+            let convertedAudioURL = try convertToWhisperCompatibleWAV(from: workingURL)
+            if convertedAudioURL != workingURL {
+                temporaryFiles.append(convertedAudioURL)
+            }
+            workingURL = convertedAudioURL
+        }
+
+        return (workingURL, temporaryFiles)
     }
 
     private func isLikelyVideoFile(_ url: URL) -> Bool {
@@ -185,5 +198,42 @@ final class Transcriber: ObservableObject {
             let underlyingError = exportSession.error ?? error
             throw NSError(domain: "Transcriber", code: 11, userInfo: [NSLocalizedDescriptionKey: "\(String(localized: "error_video_extract_failed"))\n\n\(underlyingError.localizedDescription)"])
         }
+    }
+
+    private func shouldConvertToWAV(_ url: URL) -> Bool {
+        let fileExtension = url.pathExtension.lowercased()
+        return !passthroughAudioExtensions.contains(fileExtension)
+    }
+
+    private func convertToWhisperCompatibleWAV(from inputURL: URL) throws -> URL {
+        let outputURL = URL(filePath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("wav")
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/afconvert")
+        process.arguments = [
+            "-f", "WAVE",
+            "-d", "LEI16@16000",
+            "-c", "1",
+            inputURL.path,
+            outputURL.path
+        ]
+
+        let stderrPipe = Pipe()
+        process.standardError = stderrPipe
+        process.standardOutput = Pipe()
+
+        try process.run()
+        process.waitUntilExit()
+
+        guard process.terminationStatus == 0 else {
+            let conversionLogData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+            let conversionLog = String(data: conversionLogData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let details = conversionLog.isEmpty ? "" : "\n\n\(conversionLog)"
+            throw NSError(domain: "Transcriber", code: 12, userInfo: [NSLocalizedDescriptionKey: "\(String(localized: "error_audio_convert_failed"))\(details)"])
+        }
+
+        return outputURL
     }
 }

@@ -44,3 +44,5 @@
 "ok" = "确定";
 "generic_error" = "发生未知错误。";
 "error_missing_whisper_cli" = "缺少 whisper-cli。请安装 whisper.cpp，并确保 /opt/homebrew/bin、/usr/local/bin 或应用支持目录的 bin 文件夹中可找到 whisper-cli。";
+
+"error_audio_convert_failed" = "无法将所选音频转换为 Whisper 可识别的 WAV 文件。";
