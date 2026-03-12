@@ -10,7 +10,7 @@
 "transcribing" = "Transcribing...";
 "done" = "Done";
 "first_run_setup" = "First Run Setup";
-"setup_description" = "Download the transcription engine and model once. The app will work fully offline after setup.";
+"setup_description" = "Download a Whisper model from Hugging Face, then import it here. The app will copy the model and finish setup.";
 "model" = "Model";
 "model_english" = "Medium English (default)";
 "model_multilingual" = "Medium Multilingual";
@@ -21,11 +21,12 @@
 "setup_extracting_engine" = "Extracting engine...";
 "setup_downloading_model" = "Downloading model (this can take a while)...";
 "setup_importing_model" = "Importing model...";
-"setup_model_download_hint" = "If automatic download fails, open the model page on Hugging Face, download the .bin file, then import it here. The app copies it into its own folder.";
+"setup_model_download_hint" = "Open the model page on Hugging Face, download the .bin file, then import it here. The app copies it into its own folder.";
 "open_huggingface" = "Open on Hugging Face";
 "import_model" = "Import Downloaded Model";
 "setup_done" = "Setup completed.";
 "error_download_failed" = "Download failed.";
+"error_invalid_model_file" = "Please select a Whisper model .bin file.";
 "error_extracting_engine" = "Could not extract whisper engine.";
 "error_missing_result" = "No transcript output was produced.";
 "error_transcribe_failed" = "Transcription failed.";

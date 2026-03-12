@@ -16,14 +16,6 @@ enum InstallChoice: String, CaseIterable, Identifiable {
         }
     }
 
-    var modelURL: URL {
-        switch self {
-        case .mediumEN:
-            return URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en.bin?download=true")!
-        case .mediumMultilingual:
-            return URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin?download=true")!
-        }
-    }
 
     var huggingFaceModelPageURL: URL {
         switch self {
@@ -106,25 +98,6 @@ final class SetupManager: ObservableObject {
         }
     }
 
-    func install() async {
-        stage = .installing
-        setupProgress = 0
-        setupStatusText = String(localized: "setup_preparing")
-
-        do {
-            try ensureDirectories()
-            try await downloadWhisperBinary()
-            setupProgress = 0.5
-            try await downloadModel()
-            setupProgress = 1.0
-            setupStatusText = String(localized: "setup_done")
-            userDefaults.set(installChoice.modelFileName, forKey: "selectedModelName")
-            stage = .ready
-        } catch {
-            stage = .failed(error.localizedDescription)
-        }
-    }
-
     func importModel(from sourceURL: URL) async {
         stage = .installing
         setupProgress = 0
@@ -139,6 +112,14 @@ final class SetupManager: ObservableObject {
 
         do {
             try ensureDirectories()
+            guard sourceURL.pathExtension.lowercased() == "bin" else {
+                throw NSError(
+                    domain: "Setup",
+                    code: 3,
+                    userInfo: [NSLocalizedDescriptionKey: String(localized: "error_invalid_model_file")]
+                )
+            }
+
             if !fm.isExecutableFile(atPath: whisperExecutableURL.path) {
                 try await downloadWhisperBinary()
             }
@@ -192,11 +173,6 @@ final class SetupManager: ObservableObject {
         try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: whisperExecutableURL.path)
     }
 
-    private func downloadModel() async throws {
-        setupStatusText = String(localized: "setup_downloading_model")
-        let destination = modelDirectory.appendingPathComponent(installChoice.modelFileName)
-        try await downloadFile(from: installChoice.modelURL, to: destination)
-    }
 
     private func downloadFile(from source: URL, to destination: URL) async throws {
         let (tmpURL, response) = try await URLSession.shared.download(from: source)
