@@ -66,7 +66,9 @@ final class SetupManager: ObservableObject {
     let modelDirectory: URL
     let binDirectory: URL
 
-    var whisperExecutableURL: URL { binDirectory.appendingPathComponent("whisper-cli") }
+    var whisperExecutableURL: URL? {
+        resolveWhisperExecutableURL()
+    }
     var selectedModelURL: URL {
         let saved = userDefaults.string(forKey: "selectedModelName")
         let name = saved ?? installChoice.modelFileName
@@ -94,8 +96,10 @@ final class SetupManager: ObservableObject {
             try ensureDirectories()
             if installArtifactsAvailable() {
                 stage = .ready
-            } else {
+            } else if !isModelInstalled() {
                 stage = .needsInstall
+            } else {
+                stage = .failed(String(localized: "error_missing_whisper_cli"))
             }
         } catch {
             stage = .failed(error.localizedDescription)
@@ -156,12 +160,22 @@ final class SetupManager: ObservableObject {
         userDefaults.set(modelName, forKey: "selectedModelName")
         if installArtifactsAvailable() {
             stage = .ready
+        } else if !isModelInstalled() {
+            stage = .needsInstall
+        } else {
+            stage = .failed(String(localized: "error_missing_whisper_cli"))
         }
     }
 
     func clearFailure() {
         if case .failed = stage {
-            stage = installArtifactsAvailable() ? .ready : .needsInstall
+            if installArtifactsAvailable() {
+                stage = .ready
+            } else if !isModelInstalled() {
+                stage = .needsInstall
+            } else {
+                stage = .failed(String(localized: "error_missing_whisper_cli"))
+            }
         }
     }
 
@@ -172,7 +186,31 @@ final class SetupManager: ObservableObject {
     }
 
     private func installArtifactsAvailable() -> Bool {
+        isModelInstalled() && whisperExecutableURL != nil
+    }
+
+    private func isModelInstalled() -> Bool {
         fm.fileExists(atPath: selectedModelURL.path)
+    }
+
+    private func resolveWhisperExecutableURL() -> URL? {
+        var candidates = [
+            binDirectory.appendingPathComponent("whisper-cli"),
+            URL(filePath: "/opt/homebrew/bin/whisper-cli"),
+            URL(filePath: "/usr/local/bin/whisper-cli")
+        ]
+
+        if let resourceURL = Bundle.main.resourceURL {
+            candidates.insert(resourceURL.appendingPathComponent("whisper-cli"), at: 1)
+        }
+
+        for candidate in candidates {
+            if fm.isExecutableFile(atPath: candidate.path) {
+                return candidate
+            }
+        }
+
+        return nil
     }
 
     private func uniqueModelFileName(for proposedName: String) -> String {

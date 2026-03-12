@@ -37,3 +37,4 @@
 "error_title" = "Error";
 "ok" = "OK";
 "generic_error" = "Something went wrong.";
+"error_missing_whisper_cli" = "whisper-cli is missing. Install whisper.cpp and ensure whisper-cli is available in /opt/homebrew/bin, /usr/local/bin, or the app support bin folder.";
