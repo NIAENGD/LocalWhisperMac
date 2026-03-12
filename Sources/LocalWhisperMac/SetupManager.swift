@@ -120,10 +120,6 @@ final class SetupManager: ObservableObject {
                 )
             }
 
-            if !fm.isExecutableFile(atPath: whisperExecutableURL.path) {
-                try await downloadWhisperBinary()
-            }
-
             setupStatusText = String(localized: "setup_importing_model")
             let destination = modelDirectory.appendingPathComponent(installChoice.modelFileName)
             if fm.fileExists(atPath: destination.path) {
@@ -140,6 +136,12 @@ final class SetupManager: ObservableObject {
         }
     }
 
+    func clearFailure() {
+        if case .failed = stage {
+            stage = installArtifactsAvailable() ? .ready : .needsInstall
+        }
+    }
+
     private func ensureDirectories() throws {
         try fm.createDirectory(at: appSupportDirectory, withIntermediateDirectories: true)
         try fm.createDirectory(at: modelDirectory, withIntermediateDirectories: true)
@@ -147,49 +149,6 @@ final class SetupManager: ObservableObject {
     }
 
     private func installArtifactsAvailable() -> Bool {
-        fm.isExecutableFile(atPath: whisperExecutableURL.path) && fm.fileExists(atPath: selectedModelURL.path)
-    }
-
-    private func downloadWhisperBinary() async throws {
-        setupStatusText = String(localized: "setup_downloading_engine")
-
-        let releaseURL = URL(string: "https://github.com/ggerganov/whisper.cpp/releases/download/v1.7.6/whisper-bin-macos-arm64.zip")!
-        let zipURL = appSupportDirectory.appendingPathComponent("whisper-bin-macos-arm64.zip")
-
-        try await downloadFile(from: releaseURL, to: zipURL)
-        setupStatusText = String(localized: "setup_extracting_engine")
-
-        let process = Process()
-        process.executableURL = URL(filePath: "/usr/bin/unzip")
-        process.arguments = ["-o", zipURL.path, "whisper-cli", "-d", binDirectory.path]
-        try process.run()
-        process.waitUntilExit()
-
-        if process.terminationStatus != 0 {
-            throw NSError(domain: "Setup", code: 2, userInfo: [NSLocalizedDescriptionKey: String(localized: "error_extracting_engine")])
-        }
-
-        try fm.removeItem(at: zipURL)
-        try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: whisperExecutableURL.path)
-    }
-
-
-    private func downloadFile(from source: URL, to destination: URL) async throws {
-        let (tmpURL, response) = try await URLSession.shared.download(from: source)
-        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-            throw NSError(
-                domain: "Setup",
-                code: 1,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "\(String(localized: "error_download_failed")) (HTTP \(statusCode))"
-                ]
-            )
-        }
-
-        if fm.fileExists(atPath: destination.path) {
-            try fm.removeItem(at: destination)
-        }
-        try fm.moveItem(at: tmpURL, to: destination)
+        fm.fileExists(atPath: selectedModelURL.path)
     }
 }
