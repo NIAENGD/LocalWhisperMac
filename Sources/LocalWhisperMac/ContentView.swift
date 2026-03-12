@@ -33,7 +33,7 @@ struct ContentView: View {
         }
         .fileImporter(
             isPresented: $showModelImporter,
-            allowedContentTypes: [.data, .item],
+            allowedContentTypes: modelImporterTypes,
             allowsMultipleSelection: false
         ) { result in
             if case let .success(urls) = result, let selectedModelURL = urls.first {
@@ -187,15 +187,6 @@ struct ContentView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-
-                Button {
-                    Task { await setup.install() }
-                } label: {
-                    Text(setup.isInstalling ? "setup_in_progress" : "start_setup")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(setup.isInstalling)
             }
             .padding(24)
             .frame(width: 520)
@@ -232,6 +223,14 @@ struct ContentView: View {
             return !transcriber.outputText.isEmpty
         }
         return false
+    }
+
+    private var modelImporterTypes: [UTType] {
+        var allowed: [UTType] = [.data, .item]
+        if let binType = UTType(filenameExtension: "bin") {
+            allowed.insert(binType, at: 0)
+        }
+        return allowed
     }
 }
 
