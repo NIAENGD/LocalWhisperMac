@@ -191,13 +191,15 @@ final class Transcriber: ObservableObject {
         exportSession.outputFileType = .m4a
         exportSession.shouldOptimizeForNetworkUse = false
 
-        do {
-            try await exportSession.export()
-            return outputURL
-        } catch {
-            let underlyingError = exportSession.error ?? error
+        await exportSession.export()
+
+        guard exportSession.status == .completed else {
+            let underlyingError = exportSession.error
+                ?? NSError(domain: "Transcriber", code: 11, userInfo: [NSLocalizedDescriptionKey: String(localized: "error_video_extract_failed")])
             throw NSError(domain: "Transcriber", code: 11, userInfo: [NSLocalizedDescriptionKey: "\(String(localized: "error_video_extract_failed"))\n\n\(underlyingError.localizedDescription)"])
         }
+
+        return outputURL
     }
 
     private func shouldConvertToWAV(_ url: URL) -> Bool {
