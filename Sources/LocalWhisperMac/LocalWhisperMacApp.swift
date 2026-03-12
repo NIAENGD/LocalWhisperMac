@@ -15,6 +15,11 @@ struct LocalWhisperMacApp: App {
                     await setupManager.loadState()
                 }
         }
+
+        Settings {
+            SettingsView()
+                .environmentObject(setupManager)
+        }
         .windowStyle(.titleBar)
         .windowToolbarStyle(.unified(showsTitle: false))
     }

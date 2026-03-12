@@ -2,12 +2,16 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View {
+    private enum ImportTarget {
+        case audio
+        case model
+    }
+
     @EnvironmentObject private var setup: SetupManager
     @EnvironmentObject private var transcriber: Transcriber
     @Environment(\.openURL) private var openURL
 
-    @State private var showFileImporter = false
-    @State private var showModelImporter = false
+    @State private var importTarget: ImportTarget?
 
     var body: some View {
         ZStack {
@@ -23,24 +27,18 @@ struct ContentView: View {
             .padding(28)
         }
         .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [.audio, .movie, .mpeg4Movie, .wav],
-            allowsMultipleSelection: false
-        ) { result in
-            if case let .success(urls) = result {
-                transcriber.selectedFileURL = urls.first
-            }
-        }
-        .fileImporter(
-            isPresented: $showModelImporter,
-            allowedContentTypes: modelImporterTypes,
-            allowsMultipleSelection: false
-        ) { result in
-            if case let .success(urls) = result, let selectedModelURL = urls.first {
-                Task {
-                    await setup.importModel(from: selectedModelURL)
+            isPresented: Binding(
+                get: { importTarget != nil },
+                set: { showing in
+                    if !showing {
+                        importTarget = nil
+                    }
                 }
-            }
+            ),
+            allowedContentTypes: allowedTypes,
+            allowsMultipleSelection: false
+        ) { result in
+            handleImporterResult(result)
         }
         .alert(String(localized: "error_title"), isPresented: Binding(
             get: {
@@ -69,18 +67,27 @@ struct ContentView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("app_title")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-            Text("app_subtitle")
-                .foregroundStyle(.secondary)
+        HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("app_title")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                Text("app_subtitle")
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            SettingsLink {
+                Label("settings", systemImage: "gearshape")
+            }
+            .buttonStyle(.bordered)
         }
     }
 
     private var fileSection: some View {
         HStack(spacing: 14) {
             Button {
-                showFileImporter = true
+                importTarget = .audio
             } label: {
                 Label("choose_file", systemImage: "plus.circle.fill")
             }
@@ -181,7 +188,7 @@ struct ContentView: View {
                     .disabled(setup.isInstalling)
 
                     Button {
-                        showModelImporter = true
+                        importTarget = .model
                     } label: {
                         Text("import_model")
                     }
@@ -232,12 +239,43 @@ struct ContentView: View {
         return false
     }
 
+    private var allowedTypes: [UTType] {
+        switch importTarget {
+        case .audio:
+            return [.audio, .movie, .mpeg4Movie]
+        case .model:
+            return modelImporterTypes
+        case .none:
+            return [.data]
+        }
+    }
+
     private var modelImporterTypes: [UTType] {
         var allowed: [UTType] = [.data, .item]
         if let binType = UTType(filenameExtension: "bin") {
             allowed.insert(binType, at: 0)
         }
         return allowed
+    }
+
+    private func handleImporterResult(_ result: Result<[URL], Error>) {
+        guard case let .success(urls) = result, let selectedURL = urls.first else {
+            importTarget = nil
+            return
+        }
+
+        switch importTarget {
+        case .audio:
+            transcriber.selectedFileURL = selectedURL
+        case .model:
+            Task {
+                await setup.importModel(from: selectedURL)
+            }
+        case .none:
+            break
+        }
+
+        importTarget = nil
     }
 }
 

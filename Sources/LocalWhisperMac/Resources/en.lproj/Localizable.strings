@@ -25,6 +25,10 @@
 "open_huggingface" = "Open on Hugging Face";
 "import_model" = "Import Downloaded Model";
 "setup_done" = "Setup completed.";
+"settings" = "Settings";
+"current_model" = "Current Model";
+"install_model" = "Install / Import Model";
+"settings_no_models" = "No models installed yet. Import a .bin model below.";
 "error_download_failed" = "Download failed.";
 "error_invalid_model_file" = "Please select a Whisper model .bin file.";
 "error_extracting_engine" = "Could not extract whisper engine.";
