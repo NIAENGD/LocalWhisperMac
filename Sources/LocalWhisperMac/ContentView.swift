@@ -48,7 +48,14 @@ struct ContentView: View {
                 if case .failed = transcriber.status { return true }
                 return false
             },
-            set: { _ in }
+            set: { showing in
+                if !showing {
+                    setup.clearFailure()
+                    if case .failed = transcriber.status {
+                        transcriber.status = .idle
+                    }
+                }
+            }
         )) {
             Button(String(localized: "ok")) {}
         } message: {

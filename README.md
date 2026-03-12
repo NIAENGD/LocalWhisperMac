@@ -6,7 +6,6 @@ A modern **macOS (Apple Silicon only)** GUI app that transcribes local audio/vid
 - App icon is sourced from the repository `icon.png` during packaging.
 - One-screen SwiftUI desktop app.
 - First-run setup wizard that imports a model you download from Hugging Face:
-  - `whisper-cli` prebuilt binary is downloaded automatically during import (Apple Silicon).
   - User-provided model (`ggml-medium.en.bin` for English or `ggml-medium.bin` for multilingual).
 - Offline transcription workflow with:
   - file picker,
