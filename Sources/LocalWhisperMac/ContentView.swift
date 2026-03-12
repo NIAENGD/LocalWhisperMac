@@ -29,11 +29,7 @@ struct ContentView: View {
         .fileImporter(
             isPresented: Binding(
                 get: { importTarget != nil },
-                set: { showing in
-                    if !showing {
-                        importTarget = nil
-                    }
-                }
+                set: { _ in }
             ),
             allowedContentTypes: allowedTypes,
             allowsMultipleSelection: false
