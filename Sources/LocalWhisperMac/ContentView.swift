@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import AppKit
 
 struct ContentView: View {
     private enum ImportTarget {
@@ -163,6 +164,10 @@ struct ContentView: View {
                 Text("setup_description")
                     .foregroundStyle(.secondary)
 
+                if setup.whisperExecutableURL == nil {
+                    prerequisiteInstallSection
+                }
+
                 Picker("model", selection: $setup.installChoice) {
                     ForEach(InstallChoice.allCases) { option in
                         Text(option.displayTitle).tag(option)
@@ -202,6 +207,43 @@ struct ContentView: View {
             .frame(width: 520)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
+    }
+
+    private var prerequisiteInstallSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("setup_prereq_title")
+                .font(.headline)
+
+            Text("setup_prereq_body")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                Text(prerequisiteCommands)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+
+            Button {
+                copyPrerequisiteCommands()
+            } label: {
+                Label("copy_setup_commands", systemImage: "doc.on.doc")
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+
+    private var prerequisiteCommands: String {
+        "brew install whisper-cpp\nwhich whisper-cli"
+    }
+
+    private func copyPrerequisiteCommands() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(prerequisiteCommands, forType: .string)
     }
 
     private var statusText: String {

@@ -11,6 +11,9 @@
 "done" = "Done";
 "first_run_setup" = "First Run Setup";
 "setup_description" = "Download a Whisper model from Hugging Face, then import it here. The app will copy the model and finish setup.";
+"setup_prereq_title" = "Install whisper.cpp first";
+"setup_prereq_body" = "Before importing a model, run these commands in Terminal so whisper-cli is available to the app:";
+"copy_setup_commands" = "Copy Setup Commands";
 "model" = "Model";
 "model_english" = "Medium English (default)";
 "model_multilingual" = "Medium Multilingual";
