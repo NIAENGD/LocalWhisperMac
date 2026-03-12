@@ -36,6 +36,9 @@
 "error_invalid_model_file" = "Please select a Whisper model .bin file.";
 "error_extracting_engine" = "Could not extract whisper engine.";
 "error_missing_result" = "No transcript output was produced.";
+"error_empty_result" = "Transcription finished but no text was recognized.";
+"error_video_has_no_audio" = "The selected video has no audio track to transcribe.";
+"error_video_extract_failed" = "Could not extract audio from the selected video.";
 "error_transcribe_failed" = "Transcription failed.";
 "error_title" = "Error";
 "ok" = "OK";
