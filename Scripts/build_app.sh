@@ -5,6 +5,9 @@ APP_NAME="LocalWhisperMac"
 BUNDLE_ID="com.localwhispermac.app"
 BUILD_DIR=".build/release"
 APP_DIR="dist/${APP_NAME}.app"
+RESOURCE_SRC="Sources/LocalWhisperMac/Resources"
+ICON_NAME="AppIcon"
+ICON_URL="https://raw.githubusercontent.com/ggerganov/whisper.cpp/master/examples/whisper.android.java/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png"
 
 swift build -c release
 
@@ -14,6 +17,29 @@ mkdir -p "$APP_DIR/Contents/Resources"
 
 cp "$BUILD_DIR/$APP_NAME" "$APP_DIR/Contents/MacOS/$APP_NAME"
 chmod +x "$APP_DIR/Contents/MacOS/$APP_NAME"
+
+if [ -d "$RESOURCE_SRC" ]; then
+  cp -R "$RESOURCE_SRC"/* "$APP_DIR/Contents/Resources/"
+fi
+
+if command -v curl >/dev/null 2>&1; then
+  ICON_SOURCE_PNG="$APP_DIR/Contents/Resources/${ICON_NAME}.png"
+  curl -fsSL "$ICON_URL" -o "$ICON_SOURCE_PNG"
+
+  if command -v sips >/dev/null 2>&1 && command -v iconutil >/dev/null 2>&1; then
+    ICONSET_DIR="$APP_DIR/Contents/Resources/${ICON_NAME}.iconset"
+    mkdir -p "$ICONSET_DIR"
+
+    for size in 16 32 128 256 512; do
+      sips -z "$size" "$size" "$ICON_SOURCE_PNG" --out "$ICONSET_DIR/icon_${size}x${size}.png" >/dev/null
+      double_size=$((size * 2))
+      sips -z "$double_size" "$double_size" "$ICON_SOURCE_PNG" --out "$ICONSET_DIR/icon_${size}x${size}@2x.png" >/dev/null
+    done
+
+    iconutil -c icns "$ICONSET_DIR" -o "$APP_DIR/Contents/Resources/${ICON_NAME}.icns"
+    rm -rf "$ICONSET_DIR"
+  fi
+fi
 
 cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -26,6 +52,8 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
     <string>${APP_NAME}</string>
     <key>CFBundleIdentifier</key>
     <string>${BUNDLE_ID}</string>
+    <key>CFBundleIconFile</key>
+    <string>${ICON_NAME}</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

@@ -17,6 +17,11 @@ final class Transcriber: ObservableObject {
 
     private var process: Process?
 
+    var isRunning: Bool {
+        if case .running = status { return true }
+        return false
+    }
+
     func start(executableURL: URL, modelURL: URL) async {
         guard let input = selectedFileURL else { return }
 
@@ -54,7 +59,7 @@ final class Transcriber: ObservableObject {
             }
 
             try process.run()
-            process.waitUntilExit()
+            await waitForTermination(process)
             stderrPipe.fileHandleForReading.readabilityHandler = nil
 
             if process.terminationStatus == 0 {
@@ -86,6 +91,14 @@ final class Transcriber: ObservableObject {
 
         if panel.runModal() == .OK, let saveURL = panel.url {
             try? outputText.write(to: saveURL, atomically: true, encoding: .utf8)
+        }
+    }
+
+    private func waitForTermination(_ process: Process) async {
+        await withCheckedContinuation { continuation in
+            process.terminationHandler = { _ in
+                continuation.resume()
+            }
         }
     }
 
