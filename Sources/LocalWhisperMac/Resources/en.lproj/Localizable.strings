@@ -20,6 +20,10 @@
 "setup_downloading_engine" = "Downloading whisper engine...";
 "setup_extracting_engine" = "Extracting engine...";
 "setup_downloading_model" = "Downloading model (this can take a while)...";
+"setup_importing_model" = "Importing model...";
+"setup_model_download_hint" = "If automatic download fails, open the model page on Hugging Face, download the .bin file, then import it here. The app copies it into its own folder.";
+"open_huggingface" = "Open on Hugging Face";
+"import_model" = "Import Downloaded Model";
 "setup_done" = "Setup completed.";
 "error_download_failed" = "Download failed.";
 "error_extracting_engine" = "Could not extract whisper engine.";

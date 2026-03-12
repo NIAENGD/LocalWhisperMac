@@ -1,10 +1,13 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject private var setup: SetupManager
     @EnvironmentObject private var transcriber: Transcriber
+    @Environment(\.openURL) private var openURL
 
     @State private var showFileImporter = false
+    @State private var showModelImporter = false
 
     var body: some View {
         ZStack {
@@ -26,6 +29,17 @@ struct ContentView: View {
         ) { result in
             if case let .success(urls) = result {
                 transcriber.selectedFileURL = urls.first
+            }
+        }
+        .fileImporter(
+            isPresented: $showModelImporter,
+            allowedContentTypes: [.data, .item],
+            allowsMultipleSelection: false
+        ) { result in
+            if case let .success(urls) = result, let selectedModelURL = urls.first {
+                Task {
+                    await setup.importModel(from: selectedModelURL)
+                }
             }
         }
         .alert(String(localized: "error_title"), isPresented: Binding(
@@ -146,6 +160,26 @@ struct ContentView: View {
                 }
                 .pickerStyle(.segmented)
                 .disabled(setup.isInstalling)
+
+                Text("setup_model_download_hint")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                HStack {
+                    Button {
+                        openURL(setup.installChoice.huggingFaceModelPageURL)
+                    } label: {
+                        Text("open_huggingface")
+                    }
+                    .disabled(setup.isInstalling)
+
+                    Button {
+                        showModelImporter = true
+                    } label: {
+                        Text("import_model")
+                    }
+                    .disabled(setup.isInstalling)
+                }
 
                 if setup.isInstalling {
                     ProgressView(value: setup.setupProgress)
