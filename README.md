@@ -30,6 +30,11 @@ dist/LocalWhisperMac.app
 Drag it to `/Applications` if desired.
 
 ## Runtime behavior
+- Requires `whisper-cli` to be available at one of:
+  - `~/Library/Application Support/LocalWhisperMac/bin/whisper-cli`
+  - `/opt/homebrew/bin/whisper-cli`
+  - `/usr/local/bin/whisper-cli`
+
 - First launch shows setup card.
 - User chooses model type (English or multilingual).
 - App stores runtime assets into:

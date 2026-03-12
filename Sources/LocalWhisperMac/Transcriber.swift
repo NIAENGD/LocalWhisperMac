@@ -22,8 +22,12 @@ final class Transcriber: ObservableObject {
         return false
     }
 
-    func start(executableURL: URL, modelURL: URL) async {
+    func start(executableURL: URL?, modelURL: URL) async {
         guard let input = selectedFileURL else { return }
+        guard let executableURL else {
+            status = .failed(String(localized: "error_missing_whisper_cli"))
+            return
+        }
 
         let outputURL = URL(filePath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString)

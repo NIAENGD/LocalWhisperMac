@@ -103,7 +103,7 @@ struct ContentView: View {
                 Label("start_transcribing", systemImage: "waveform.and.mic")
             }
             .buttonStyle(.borderedProminent)
-            .disabled(transcriber.selectedFileURL == nil || !setup.isReady || transcriber.isRunning)
+            .disabled(transcriber.selectedFileURL == nil || !setup.isReady || transcriber.isRunning || setup.whisperExecutableURL == nil)
         }
     }
 
