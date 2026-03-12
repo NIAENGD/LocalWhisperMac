@@ -25,6 +25,10 @@
 "open_huggingface" = "在 Hugging Face 打开";
 "import_model" = "导入已下载模型";
 "setup_done" = "设置完成。";
+"settings" = "设置";
+"current_model" = "当前模型";
+"install_model" = "安装 / 导入模型";
+"settings_no_models" = "尚未安装模型，请在下方导入 .bin 模型。";
 "error_download_failed" = "下载失败。";
 "error_invalid_model_file" = "请选择 Whisper 模型 .bin 文件。";
 "error_extracting_engine" = "无法解压 whisper 引擎。";

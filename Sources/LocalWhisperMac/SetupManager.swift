@@ -73,6 +73,10 @@ final class SetupManager: ObservableObject {
         return modelDirectory.appendingPathComponent(name)
     }
 
+    var selectedModelName: String {
+        userDefaults.string(forKey: "selectedModelName") ?? installChoice.modelFileName
+    }
+
     init() {
         let root = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("LocalWhisperMac", isDirectory: true)
@@ -121,7 +125,8 @@ final class SetupManager: ObservableObject {
             }
 
             setupStatusText = String(localized: "setup_importing_model")
-            let destination = modelDirectory.appendingPathComponent(installChoice.modelFileName)
+            let destinationName = uniqueModelFileName(for: sourceURL.lastPathComponent)
+            let destination = modelDirectory.appendingPathComponent(destinationName)
             if fm.fileExists(atPath: destination.path) {
                 try fm.removeItem(at: destination)
             }
@@ -129,10 +134,28 @@ final class SetupManager: ObservableObject {
 
             setupProgress = 1.0
             setupStatusText = String(localized: "setup_done")
-            userDefaults.set(installChoice.modelFileName, forKey: "selectedModelName")
+            userDefaults.set(destinationName, forKey: "selectedModelName")
             stage = .ready
         } catch {
             stage = .failed(error.localizedDescription)
+        }
+    }
+
+    func availableModels() -> [String] {
+        guard let items = try? fm.contentsOfDirectory(at: modelDirectory, includingPropertiesForKeys: nil) else {
+            return []
+        }
+
+        return items
+            .filter { $0.pathExtension.lowercased() == "bin" }
+            .map(\.lastPathComponent)
+            .sorted()
+    }
+
+    func selectModel(named modelName: String) {
+        userDefaults.set(modelName, forKey: "selectedModelName")
+        if installArtifactsAvailable() {
+            stage = .ready
         }
     }
 
@@ -150,5 +173,19 @@ final class SetupManager: ObservableObject {
 
     private func installArtifactsAvailable() -> Bool {
         fm.fileExists(atPath: selectedModelURL.path)
+    }
+
+    private func uniqueModelFileName(for proposedName: String) -> String {
+        let ext = URL(filePath: proposedName).pathExtension
+        let baseName = URL(filePath: proposedName).deletingPathExtension().lastPathComponent
+        var candidate = proposedName
+        var index = 1
+
+        while fm.fileExists(atPath: modelDirectory.appendingPathComponent(candidate).path) {
+            candidate = "\(baseName)-\(index).\(ext)"
+            index += 1
+        }
+
+        return candidate
     }
 }
