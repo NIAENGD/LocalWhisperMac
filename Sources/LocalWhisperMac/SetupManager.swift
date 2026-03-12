@@ -43,6 +43,16 @@ final class SetupManager: ObservableObject {
         case failed(String)
     }
 
+    var isReady: Bool {
+        if case .ready = stage { return true }
+        return false
+    }
+
+    var isInstalling: Bool {
+        if case .installing = stage { return true }
+        return false
+    }
+
     @Published var stage: Stage = .loading
     @Published var installChoice: InstallChoice = .mediumEN
     @Published var setupProgress: Double = 0

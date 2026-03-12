@@ -41,7 +41,7 @@ struct ContentView: View {
             Text(errorMessage)
         }
         .overlay {
-            if setup.stage != .ready {
+            if !setup.isReady {
                 setupOverlay
             }
         }
@@ -79,7 +79,7 @@ struct ContentView: View {
                 Label("start_transcribing", systemImage: "waveform.and.mic")
             }
             .buttonStyle(.borderedProminent)
-            .disabled(transcriber.selectedFileURL == nil || setup.stage != .ready || transcriber.status == .running)
+            .disabled(transcriber.selectedFileURL == nil || !setup.isReady || transcriber.isRunning)
         }
     }
 
@@ -145,9 +145,9 @@ struct ContentView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .disabled(setup.stage == .installing)
+                .disabled(setup.isInstalling)
 
-                if setup.stage == .installing {
+                if setup.isInstalling {
                     ProgressView(value: setup.setupProgress)
                     Text(setup.setupStatusText)
                         .font(.caption)
@@ -157,11 +157,11 @@ struct ContentView: View {
                 Button {
                     Task { await setup.install() }
                 } label: {
-                    Text(setup.stage == .installing ? "setup_in_progress" : "start_setup")
+                    Text(setup.isInstalling ? "setup_in_progress" : "start_setup")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(setup.stage == .installing)
+                .disabled(setup.isInstalling)
             }
             .padding(24)
             .frame(width: 520)
@@ -201,8 +201,12 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .environmentObject(SetupManager())
-        .environmentObject(Transcriber())
+#if DEBUG
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .environmentObject(SetupManager())
+            .environmentObject(Transcriber())
+    }
 }
+#endif

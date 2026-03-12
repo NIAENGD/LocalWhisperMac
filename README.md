@@ -3,6 +3,7 @@
 A modern **macOS (Apple Silicon only)** GUI app that transcribes local audio/video files with `whisper.cpp`.
 
 ## What is included
+- App icon is fetched during packaging from the official `whisper.cpp` Android launcher icon URL.
 - One-screen SwiftUI desktop app.
 - First-run setup wizard that downloads:
   - `whisper-cli` prebuilt binary (Apple Silicon).
