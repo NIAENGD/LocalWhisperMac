@@ -20,6 +20,10 @@
 "setup_downloading_engine" = "正在下载 whisper 引擎...";
 "setup_extracting_engine" = "正在解压引擎...";
 "setup_downloading_model" = "正在下载模型（可能需要一些时间）...";
+"setup_importing_model" = "正在导入模型...";
+"setup_model_download_hint" = "如果自动下载失败，请打开 Hugging Face 模型页面下载 .bin 文件，然后在这里导入。应用会复制到自己的目录中。";
+"open_huggingface" = "在 Hugging Face 打开";
+"import_model" = "导入已下载模型";
 "setup_done" = "设置完成。";
 "error_download_failed" = "下载失败。";
 "error_extracting_engine" = "无法解压 whisper 引擎。";

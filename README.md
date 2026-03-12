@@ -36,6 +36,10 @@ Drag it to `/Applications` if desired.
 - App downloads runtime assets once into:
   - `~/Library/Application Support/LocalWhisperMac/bin`
   - `~/Library/Application Support/LocalWhisperMac/models`
+- If model auto-download fails on your network, click **Open on Hugging Face** and manually download one of:
+  - `ggml-medium.en.bin` (English)
+  - `ggml-medium.bin` (multilingual)
+  Then click **Import Downloaded Model**; the app copies the model into its own Application Support folder so the original file can be deleted.
 - Future runs are fully local/offline.
 
 ## Notes

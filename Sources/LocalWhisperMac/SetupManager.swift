@@ -25,6 +25,15 @@ enum InstallChoice: String, CaseIterable, Identifiable {
         }
     }
 
+    var huggingFaceModelPageURL: URL {
+        switch self {
+        case .mediumEN:
+            return URL(string: "https://huggingface.co/ggerganov/whisper.cpp/blob/main/ggml-medium.en.bin")!
+        case .mediumMultilingual:
+            return URL(string: "https://huggingface.co/ggerganov/whisper.cpp/blob/main/ggml-medium.bin")!
+        }
+    }
+
     var displayTitle: LocalizedStringKey {
         switch self {
         case .mediumEN: return "model_english"
@@ -116,6 +125,40 @@ final class SetupManager: ObservableObject {
         }
     }
 
+    func importModel(from sourceURL: URL) async {
+        stage = .installing
+        setupProgress = 0
+        setupStatusText = String(localized: "setup_preparing")
+
+        let hasSecurityScope = sourceURL.startAccessingSecurityScopedResource()
+        defer {
+            if hasSecurityScope {
+                sourceURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        do {
+            try ensureDirectories()
+            if !fm.isExecutableFile(atPath: whisperExecutableURL.path) {
+                try await downloadWhisperBinary()
+            }
+
+            setupStatusText = String(localized: "setup_importing_model")
+            let destination = modelDirectory.appendingPathComponent(installChoice.modelFileName)
+            if fm.fileExists(atPath: destination.path) {
+                try fm.removeItem(at: destination)
+            }
+            try fm.copyItem(at: sourceURL, to: destination)
+
+            setupProgress = 1.0
+            setupStatusText = String(localized: "setup_done")
+            userDefaults.set(installChoice.modelFileName, forKey: "selectedModelName")
+            stage = .ready
+        } catch {
+            stage = .failed(error.localizedDescription)
+        }
+    }
+
     private func ensureDirectories() throws {
         try fm.createDirectory(at: appSupportDirectory, withIntermediateDirectories: true)
         try fm.createDirectory(at: modelDirectory, withIntermediateDirectories: true)
@@ -158,7 +201,14 @@ final class SetupManager: ObservableObject {
     private func downloadFile(from source: URL, to destination: URL) async throws {
         let (tmpURL, response) = try await URLSession.shared.download(from: source)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            throw NSError(domain: "Setup", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "error_download_failed")])
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            throw NSError(
+                domain: "Setup",
+                code: 1,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "\(String(localized: "error_download_failed")) (HTTP \(statusCode))"
+                ]
+            )
         }
 
         if fm.fileExists(atPath: destination.path) {
