@@ -5,7 +5,7 @@ let package = Package(
     name: "LocalWhisperMac",
     defaultLocalization: "en",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v14)
     ],
     products: [
         .executable(name: "LocalWhisperMac", targets: ["LocalWhisperMac"])
