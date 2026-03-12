@@ -81,7 +81,7 @@ final class SetupManager: ObservableObject {
 
     init() {
         let root = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("LocalWhisperMac", isDirectory: true)
+            .appendingPathComponent("Audionyx", isDirectory: true)
         self.appSupportDirectory = root
         self.modelDirectory = root.appendingPathComponent("models", isDirectory: true)
         self.binDirectory = root.appendingPathComponent("bin", isDirectory: true)

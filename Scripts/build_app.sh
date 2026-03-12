@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="LocalWhisperMac"
-BUNDLE_ID="com.localwhispermac.app"
+APP_NAME="Audionyx"
+BUNDLE_ID="com.audionyx.app"
 BUILD_DIR=".build/release"
 APP_DIR="dist/${APP_NAME}.app"
 RESOURCE_SRC="Sources/LocalWhisperMac/Resources"

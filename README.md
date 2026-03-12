@@ -1,4 +1,4 @@
-# LocalWhisperMac
+# 声枢 Audionyx
 
 A modern **macOS (Apple Silicon only)** GUI app that transcribes local audio/video files with `whisper.cpp`.
 
@@ -24,22 +24,22 @@ A modern **macOS (Apple Silicon only)** GUI app that transcribes local audio/vid
 After build, the app bundle will be generated at:
 
 ```text
-dist/LocalWhisperMac.app
+dist/Audionyx.app
 ```
 
 Drag it to `/Applications` if desired.
 
 ## Runtime behavior
 - Requires `whisper-cli` to be available at one of:
-  - `~/Library/Application Support/LocalWhisperMac/bin/whisper-cli`
+  - `~/Library/Application Support/Audionyx/bin/whisper-cli`
   - `/opt/homebrew/bin/whisper-cli`
   - `/usr/local/bin/whisper-cli`
 
 - First launch shows setup card.
 - User chooses model type (English or multilingual).
 - App stores runtime assets into:
-  - `~/Library/Application Support/LocalWhisperMac/bin`
-  - `~/Library/Application Support/LocalWhisperMac/models`
+  - `~/Library/Application Support/Audionyx/bin`
+  - `~/Library/Application Support/Audionyx/models`
 - Click **Open on Hugging Face** and manually download one of:
   - `ggml-medium.en.bin` (English)
   - `ggml-medium.bin` (multilingual)
