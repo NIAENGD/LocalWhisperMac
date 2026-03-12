@@ -11,6 +11,9 @@
 "done" = "已完成";
 "first_run_setup" = "首次启动设置";
 "setup_description" = "请先在 Hugging Face 下载 Whisper 模型，然后在此导入。应用会复制模型并完成设置。";
+"setup_prereq_title" = "请先安装 whisper.cpp";
+"setup_prereq_body" = "在导入模型前，请先在终端执行以下命令，确保应用可以找到 whisper-cli：";
+"copy_setup_commands" = "复制安装命令";
 "model" = "模型";
 "model_english" = "中等英文模型（默认）";
 "model_multilingual" = "中等多语言模型";
