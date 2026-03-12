@@ -178,15 +178,12 @@ final class Transcriber: ObservableObject {
         exportSession.outputFileType = .m4a
         exportSession.shouldOptimizeForNetworkUse = false
 
-        let result = await exportSession.export()
-        if case .completed = result {
+        do {
+            try await exportSession.export()
             return outputURL
+        } catch {
+            let underlyingError = exportSession.error ?? error
+            throw NSError(domain: "Transcriber", code: 11, userInfo: [NSLocalizedDescriptionKey: "\(String(localized: "error_video_extract_failed"))\n\n\(underlyingError.localizedDescription)"])
         }
-
-        if let error = exportSession.error {
-            throw NSError(domain: "Transcriber", code: 11, userInfo: [NSLocalizedDescriptionKey: "\(String(localized: "error_video_extract_failed"))\n\n\(error.localizedDescription)"])
-        }
-
-        throw NSError(domain: "Transcriber", code: 12, userInfo: [NSLocalizedDescriptionKey: String(localized: "error_video_extract_failed")])
     }
 }
