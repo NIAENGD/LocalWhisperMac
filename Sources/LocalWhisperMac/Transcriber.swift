@@ -30,11 +30,22 @@ final class Transcriber: ObservableObject {
             return
         }
 
+        let didAccessSecurityScopedResource = input.startAccessingSecurityScopedResource()
         var temporaryInputURL: URL?
 
         let outputURL = URL(filePath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("txt")
+
+        defer {
+            if didAccessSecurityScopedResource {
+                input.stopAccessingSecurityScopedResource()
+            }
+            if let temporaryInputURL {
+                try? FileManager.default.removeItem(at: temporaryInputURL)
+            }
+            try? FileManager.default.removeItem(at: outputURL)
+        }
 
         do {
             let transcribableInputURL = try await prepareInputFile(from: input)
@@ -94,10 +105,6 @@ final class Transcriber: ObservableObject {
             }
         } catch {
             status = .failed(error.localizedDescription)
-        }
-
-        if let temporaryInputURL {
-            try? FileManager.default.removeItem(at: temporaryInputURL)
         }
     }
 
