@@ -2,17 +2,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "LocalWhisperMac",
+    name: "Audionyx",
     defaultLocalization: "en",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "LocalWhisperMac", targets: ["LocalWhisperMac"])
+        .executable(name: "Audionyx", targets: ["Audionyx"])
     ],
     targets: [
         .executableTarget(
-            name: "LocalWhisperMac",
+            name: "Audionyx",
+            path: "Sources/LocalWhisperMac",
             resources: [.process("Resources")]
         )
     ]
