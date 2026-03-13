@@ -100,11 +100,11 @@ final class Transcriber: ObservableObject {
 
     private func parseProgress(from logLine: String) -> Double? {
         let pattern = #"(\d{1,3})%"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return }
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
         let range = NSRange(logLine.startIndex..<logLine.endIndex, in: logLine)
         guard let match = regex.firstMatch(in: logLine, range: range),
               let pctRange = Range(match.range(at: 1), in: logLine),
-              let pct = Double(logLine[pctRange]) else { return }
+              let pct = Double(logLine[pctRange]) else { return nil }
 
         return pct
     }
